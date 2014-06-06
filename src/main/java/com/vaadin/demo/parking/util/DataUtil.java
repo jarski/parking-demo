@@ -7,6 +7,7 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -16,6 +17,7 @@ import org.json.JSONObject;
 import com.google.gwt.thirdparty.guava.common.collect.Lists;
 import com.vaadin.demo.parking.ParkingUI;
 import com.vaadin.demo.parking.model.Shift;
+import com.vaadin.demo.parking.model.ShiftSuggestion;
 import com.vaadin.demo.parking.widgetset.client.model.Location;
 import com.vaadin.demo.parking.widgetset.client.model.Ticket;
 import com.vaadin.demo.parking.widgetset.client.model.Violation;
