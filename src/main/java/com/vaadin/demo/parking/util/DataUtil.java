@@ -23,8 +23,8 @@ import com.vaadin.ui.JavaScript;
 
 public class DataUtil {
 
-    private static final int RANDOM_SHIFT_COUNT = 700;
-    private static final int HOUR_IN_MILLIS = 1000 * 60 * 60;
+    private static final int RANDOM_SHIFT_COUNT = 7;
+    public static final int HOUR_IN_MILLIS = 1000 * 60 * 60;
     private static final List<String> NAMES = Arrays.asList("John Doe",
             "Jane Doe");
 

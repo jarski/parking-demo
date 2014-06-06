@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.openqa.selenium.internal.seleniumemulation.GetLocation;
 
 import com.vaadin.addon.responsive.Responsive;
 import com.vaadin.addon.touchkit.ui.Popover;
