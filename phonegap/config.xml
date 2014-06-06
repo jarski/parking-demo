@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns		= "http://www.w3.org/ns/widgets"
+	xmlns:gap	= "http://phonegap.com/ns/1.0"
+	id		= "com.vaadin.demo.parking_push"
+	version 	= "0.0.1">
+
+	<name>Parking push</name>
+
+	<description>
+		Application to demonstare push notifications with Vaadin and PhoneGap
+	</description>
+
+	<icon src="icon_72.png" gap:role="default" />
+
+	<access origin="*" />
+    <gap:plugin name="com.phonegap.plugins.pushplugin"/>
+    <gap:plugin name="org.apache.cordova.device" />
+    <gap:plugin name="org.apache.cordova.media" version="0.2.8" />
+    <gap:plugin name="org.apache.cordova.network-information" version="0.2.7" />
+</widget>

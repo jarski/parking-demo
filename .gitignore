@@ -7,3 +7,4 @@ widgetsets/
 gwt-unitCache/
 rebel.xml
 .checkstyle
+.DS_Store

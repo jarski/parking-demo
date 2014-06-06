@@ -5,7 +5,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.vaadin.addon.responsive.Responsive;
+import com.vaadin.addon.touchkit.ui.Popover;
 import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
@@ -14,11 +18,15 @@ import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.demo.parking.ui.MainTabsheet;
 import com.vaadin.demo.parking.util.DataUtil;
 import com.vaadin.demo.parking.widgetset.client.model.Ticket;
+import com.vaadin.demo.phonegap.push.PhoneGapPushExtension;
+import com.vaadin.demo.phonegap.push.PhoneGapPushExtension.NotificationListener;
 import com.vaadin.server.Page;
+import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.themes.Reindeer;
 
 import fi.jasoft.qrcode.QRCode;
 
@@ -27,9 +35,9 @@ import fi.jasoft.qrcode.QRCode;
  */
 @Theme("parking")
 @Widgetset("com.vaadin.demo.parking.widgetset.ParkingWidgetset")
-@PreserveOnRefresh
 @Title("Vaadin Parking Demo")
-public class ParkingUI extends UI {
+@PreserveOnRefresh
+public class ParkingUI extends UI implements NotificationListener {
 
     /*
      * Default the location to Vaadin HQ
@@ -56,6 +64,11 @@ public class ParkingUI extends UI {
         offlineModeSettings.setOfflineModeEnabled(true);
 
         new Responsive(this);
+        
+        
+        PhoneGapPushExtension phoneGapPushExtension = new PhoneGapPushExtension(this, this);
+        phoneGapPushExtension.initialize();
+        
         setImmediate(true);
 
         if (!getPage().getWebBrowser().isTouchDevice()) {
@@ -154,4 +167,16 @@ public class ParkingUI extends UI {
         }
     }
 
+	@Override
+	public void notificationReceived(JSONObject notification) {
+		try {
+			String message = notification.getString("message");
+			Popover popover = new NotificatinPopover(message);
+			addWindow(popover);
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

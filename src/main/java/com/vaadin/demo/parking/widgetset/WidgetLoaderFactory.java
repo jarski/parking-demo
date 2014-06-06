@@ -28,6 +28,7 @@ import com.vaadin.addon.touchkit.gwt.client.vcom.navigation.NavigationButtonConn
 import com.vaadin.addon.touchkit.gwt.client.vcom.navigation.NavigationManagerConnector;
 import com.vaadin.addon.touchkit.gwt.client.vcom.navigation.NavigationViewConnector;
 import com.vaadin.addon.touchkit.gwt.client.vcom.popover.PopoverConnector;
+import com.vaadin.client.JavaScriptExtension;
 import com.vaadin.client.extensions.javascriptmanager.JavaScriptManagerConnector;
 import com.vaadin.client.ui.button.ButtonConnector;
 import com.vaadin.client.ui.csslayout.CssLayoutConnector;
@@ -92,6 +93,7 @@ public class WidgetLoaderFactory extends TouchKitBundleLoaderFactory {
         usedConnectors.add(JavaScriptManagerConnector.class.getName());
         usedConnectors.add(VerticalLayoutConnector.class.getName());
         usedConnectors.add(QRCodeConnector.class.getName());
+        usedConnectors.add(JavaScriptExtension.class.getName());
     }
 
     @Override
