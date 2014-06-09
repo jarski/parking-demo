@@ -36,6 +36,11 @@
 	</pluginRepositories>
 
 	<dependencies>
+	    <dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-push</artifactId>
+			<version>${vaadin.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.google.android.gcm</groupId>
 			<artifactId>gcm-server</artifactId>

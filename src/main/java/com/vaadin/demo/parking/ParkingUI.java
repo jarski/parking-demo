@@ -4,10 +4,12 @@ import java.net.Inet4Address;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Date;
+
+import javax.xml.stream.events.StartDocument;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.openqa.selenium.internal.seleniumemulation.GetLocation;
 
 import com.vaadin.addon.responsive.Responsive;
 import com.vaadin.addon.touchkit.ui.Popover;
@@ -16,6 +18,7 @@ import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.Widgetset;
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.demo.parking.model.ShiftSuggestion;
 import com.vaadin.demo.parking.ui.MainTabsheet;
 import com.vaadin.demo.parking.util.DataUtil;
 import com.vaadin.demo.parking.widgetset.client.model.Ticket;
@@ -37,7 +40,7 @@ import fi.jasoft.qrcode.QRCode;
 @Theme("parking")
 @Widgetset("com.vaadin.demo.parking.widgetset.ParkingWidgetset")
 @Title("Vaadin Parking Demo")
-@PreserveOnRefresh
+//@PreserveOnRefresh
 public class ParkingUI extends UI implements NotificationListener {
 
     /*
@@ -48,6 +51,7 @@ public class ParkingUI extends UI implements NotificationListener {
     private String user;
     private ParkingOfflineModeExtension offlineModeSettings;
     private BeanItemContainer<Ticket> ticketContainer;
+	private NotificatinPopover notificationPopover = new NotificatinPopover();
 
     @Override
     public void init(VaadinRequest request) {
@@ -171,9 +175,14 @@ public class ParkingUI extends UI implements NotificationListener {
 	@Override
 	public void notificationReceived(JSONObject notification) {
 		try {
-			String message = notification.getString("message");
-			Popover popover = new NotificatinPopover(message);
-			addWindow(popover);
+			ShiftSuggestion shiftSuggestion = new ShiftSuggestion();
+			shiftSuggestion.setArea(notification.getString("area"));
+			shiftSuggestion.setDate(notification.getString("date"));
+			shiftSuggestion.setStart(notification.getInt("start"));
+			shiftSuggestion.setEnd(notification.getInt("end"));
+			
+			notificationPopover.setShiftSuggestion(shiftSuggestion);
+			addWindow(notificationPopover);
 			
 		} catch (JSONException e) {
 			e.printStackTrace();

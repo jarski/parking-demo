@@ -156,7 +156,7 @@ public class ShiftsView extends NavigationManager {
 
 	private BeanItemContainer<Shift> buildShiftContainer() {
 		return new BeanItemContainer<Shift>(Shift.class,
-				DataUtil.generateRandomShifts());
+				DataUtil.getShifts());
 	}
 
 	private Component buildShiftTable() {

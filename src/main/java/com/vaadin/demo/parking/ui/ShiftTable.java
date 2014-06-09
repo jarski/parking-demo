@@ -3,6 +3,7 @@ package com.vaadin.demo.parking.ui;
 import java.text.DateFormat;
 import java.util.Calendar;
 
+import com.vaadin.data.Container;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.demo.parking.ParkingUI;
@@ -20,12 +21,21 @@ public class ShiftTable extends Table {
 	public ShiftTable(String caption,
 			BeanItemContainer<Shift> shiftContainer) {
 		super(caption, shiftContainer);
+		initPropertiesAndHeaders();
+	}
+
+	private void initPropertiesAndHeaders() {
 		setVisibleColumns(new Object[] { "name", "area", "date", "start",
-				"end" });
+		"end" });
 		for (Object propertyId : getVisibleColumns()) {
 			setColumnHeader(propertyId, toFirstUpper((String) propertyId));
 		}
 		setSortContainerPropertyId("date");
+	}
+	
+	public void updateContainerDataSource(Container dataSource) {
+		setContainerDataSource(dataSource);
+		initPropertiesAndHeaders();
 	}
 
 	@Override

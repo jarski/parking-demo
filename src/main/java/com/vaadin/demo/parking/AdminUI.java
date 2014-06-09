@@ -8,10 +8,12 @@ import java.util.Locale;
 
 import javax.servlet.annotation.WebServlet;
 
+import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.data.Property;
 import com.vaadin.data.fieldgroup.FieldGroup;
+import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.converter.Converter;
@@ -20,6 +22,7 @@ import com.vaadin.demo.parking.model.ShiftSuggestion;
 import com.vaadin.demo.parking.ui.HourSelect;
 import com.vaadin.demo.parking.ui.ShiftTable;
 import com.vaadin.demo.parking.util.DataUtil;
+import com.vaadin.demo.parking.util.DataUtil.ShiftListener;
 import com.vaadin.demo.phonegap.push.AndroidPushServer;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
@@ -28,6 +31,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Layout;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
@@ -35,7 +39,8 @@ import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
 @Theme("admin")
-public class AdminUI extends UI {
+@Push
+public class AdminUI extends UI implements ShiftListener {
 
 	@WebServlet(value = { "/admin/*", "/VAADIN/*" }, asyncSupported = true)
 	@VaadinServletConfiguration(productionMode = false, ui = AdminUI.class, widgetset = "com.vaadin.DefaultWidgetSet")
@@ -45,6 +50,8 @@ public class AdminUI extends UI {
 	private BeanItemContainer<ShiftSuggestion> waitingContainer;
 	private DateFormat dateFormat;
 	private DateFormat timeFormat;
+	private FieldGroup binder  = new FieldGroup();
+	private ShiftTable confimedTable;
 
 	@Override
 	protected void init(VaadinRequest request) {
@@ -65,25 +72,50 @@ public class AdminUI extends UI {
 		layout.addComponent(newShiftForm);
 		layout.addComponent(waitingTable);
 		layout.addComponent(confimedTable);
+		
+		DataUtil.addShiftListener(this);
 	}
 
 	private Layout createNewShiftForm() {
 		FormLayout shiftForm = new ShiftFormLayout();
-		ShiftSuggestion shiftSuggestion = createDefaultShiftSuggestion();
-		final BeanItem<ShiftSuggestion> item = new BeanItem<ShiftSuggestion>(
-				shiftSuggestion);
-		FieldGroup binder = new FieldGroup(item);
+		final BeanItem<ShiftSuggestion> item = createDefaultShiftSuggestionAndBindIt();
 		binder.bindMemberFields(shiftForm);
 
 		Button button = new Button("Add shift");
 		button.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				AndroidPushServer.push("new shift info here, please");
-				waitingContainer.addBean(item.getBean());
+				try {
+					binder.commit();
+				} catch (CommitException e) {
+					e.printStackTrace();
+				}
+				waitingContainer.addBean(getEditedShiftSuggestion());
+				AndroidPushServer.pushNewShift(getEditedShiftSuggestion());
+//				createDefaultShiftSuggestionAndBindIt();
 			}
+
 		});
 		shiftForm.addComponent(button);
 		return shiftForm;
+	}
+	
+	@Override
+	public void detach() {
+		super.detach();
+		DataUtil.removeShiftListener(this);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private ShiftSuggestion getEditedShiftSuggestion() {
+		return ((BeanItem<ShiftSuggestion>) binder.getItemDataSource()).getBean();
+	}
+
+	private BeanItem<ShiftSuggestion> createDefaultShiftSuggestionAndBindIt() {
+		ShiftSuggestion shiftSuggestion = createDefaultShiftSuggestion();
+		final BeanItem<ShiftSuggestion> item = new BeanItem<ShiftSuggestion>(
+				shiftSuggestion);
+		binder.setItemDataSource(item);
+		return item;
 	}
 
 	private ShiftSuggestion createDefaultShiftSuggestion() {
@@ -170,7 +202,7 @@ public class AdminUI extends UI {
 
 	private Table createConfirmedTable() {
 		BeanItemContainer<Shift> confirmedContainer = buildShiftContainer();
-		Table confimedTable = new ShiftTable("Confirmed shifts",
+		confimedTable = new ShiftTable("Confirmed shifts",
 				confirmedContainer);
 		confimedTable.setWidth("350px");
 		return confimedTable;
@@ -178,7 +210,19 @@ public class AdminUI extends UI {
 
 	private BeanItemContainer<Shift> buildShiftContainer() {
 		return new BeanItemContainer<Shift>(Shift.class,
-				DataUtil.generateRandomShifts());
+				DataUtil.getShifts());
 	}
 
+	@Override
+	public void newShiftAdded(Shift shift) {
+		access(new Runnable() {
+			
+			@Override
+			public void run() {
+				Notification.show("Shift accepted", Notification.Type.TRAY_NOTIFICATION);
+				waitingContainer.removeAllItems();
+				confimedTable.updateContainerDataSource(buildShiftContainer());
+			}
+		});
+	}
 }

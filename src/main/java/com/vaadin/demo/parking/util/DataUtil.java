@@ -4,10 +4,13 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -25,203 +28,250 @@ import com.vaadin.ui.JavaScript;
 
 public class DataUtil {
 
-    private static final int RANDOM_SHIFT_COUNT = 7;
-    public static final int HOUR_IN_MILLIS = 1000 * 60 * 60;
-    private static final List<String> NAMES = Arrays.asList("John Doe",
-            "Jane Doe");
+	private static final int RANDOM_SHIFT_COUNT = 7;
+	public static final int HOUR_IN_MILLIS = 1000 * 60 * 60;
+	private static final List<String> NAMES = Arrays.asList("John Doe",
+			"Jane Doe");
+	private static final Collection<Shift> shifts = generateRandomShifts();
 
-    /**
-     * Generate a collection of random shifts.
-     * 
-     * @return
-     */
-    public static Collection<Shift> generateRandomShifts() {
-        Random random = new Random();
+	static private final Collection<ShiftListener> shiftListeners = new LinkedList<ShiftListener>();
+	public interface ShiftListener {
+		public void newShiftAdded(Shift shift);
+	}
+	
+	static public void addShiftListener(ShiftListener listener) {
+		shiftListeners.add(listener);
+	}
+	
+	static public void removeShiftListener(ShiftListener listener) {
+		shiftListeners.remove(listener);
+	}
+	
+	/**
+	 * Generate a collection of random shifts.
+	 * 
+	 * @return
+	 */
+	private static Collection<Shift> generateRandomShifts() {
+		Random random = new Random();
 
-        Collection<Shift> result = Lists.newArrayList();
-        for (int i = 0; i < RANDOM_SHIFT_COUNT; i++) {
-            Shift shift = new Shift();
+		Collection<Shift> result = Lists.newArrayList();
+		for (int i = 0; i < RANDOM_SHIFT_COUNT; i++) {
+			Shift shift = new Shift();
 
-            shift.setArea("ABC".charAt(random.nextInt(3))
-                    + String.valueOf(random.nextInt(4) + 1));
+			shift.setArea("ABC".charAt(random.nextInt(3))
+					+ String.valueOf(random.nextInt(4) + 1));
 
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.HOUR, random.nextInt(1000));
-            cal.set(Calendar.MINUTE, 0);
-            shift.setDate(cal.getTime());
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.HOUR, random.nextInt(1000));
+			cal.set(Calendar.MINUTE, 0);
+			shift.setDate(cal.getTime());
 
-            shift.setDurationMillis(HOUR_IN_MILLIS + random.nextInt(8)
-                    * HOUR_IN_MILLIS);
+			shift.setDurationMillis(HOUR_IN_MILLIS + random.nextInt(8)
+					* HOUR_IN_MILLIS);
 
-            shift.setName(NAMES.get(random.nextInt(NAMES.size())));
+			shift.setName(NAMES.get(random.nextInt(NAMES.size())));
 
-            result.add(shift);
-        }
-        return result;
-    }
+			result.add(shift);
+		}
+		return result;
+	}
 
-    private static final int RANDOM_TICKETS_COUNT = 50;
+	public static Collection<Shift> getShifts() {
+		return shifts;
+	}
 
-    public static Collection<Ticket> generateDummyTickets() {
+	private static final int RANDOM_TICKETS_COUNT = 50;
 
-        final List<Location> locations = Lists.newArrayList();
+	public static Collection<Ticket> generateDummyTickets() {
 
-        locations
-                .add(createLocation("Savitehtaankatu 5", 60.453917, 22.298506));
-        locations.add(createLocation("Lemminkaisenkatu 20", 60.447885,
-                22.295459));
-        locations.add(createLocation("Vaha Hameenkatu 5-7", 60.451673,
-                22.285459));
-        locations.add(createLocation("Keskikatu 15", 60.456943, 22.295115));
-        locations.add(createLocation("Kuikkulankatu 8", 60.463735, 22.294472));
-        locations.add(createLocation("Yliopistonkatu 7", 60.454488, 22.273057));
-        locations.add(createLocation("Torninkatu 6", 60.453895, 22.263015));
-        locations.add(createLocation("Kirsikkatie 6", 60.441576, 22.30829));
-        locations.add(createLocation("Peralankatu 23", 60.451419, 22.32065));
-        locations.add(createLocation("Kupittaankatu 51", 60.442571, 22.274259));
-        locations.add(createLocation("Rauhankatu 5", 60.452139, 22.255848));
-        locations.add(createLocation("Murtomaantie 39", 60.462634, 22.275761));
-        locations.add(createLocation("Piispanpelto 3", 60.462084, 22.284945));
-        locations.add(createLocation("Harjukatu 3-5", 60.455081, 22.305329));
+		final List<Location> locations = Lists.newArrayList();
 
-        Collection<Ticket> result = Lists.newArrayList();
-        for (Location location : locations) {
-            result.add(createRandomTicket(location));
-        }
+		locations
+				.add(createLocation("Savitehtaankatu 5", 60.453917, 22.298506));
+		locations.add(createLocation("Lemminkaisenkatu 20", 60.447885,
+				22.295459));
+		locations.add(createLocation("Vaha Hameenkatu 5-7", 60.451673,
+				22.285459));
+		locations.add(createLocation("Keskikatu 15", 60.456943, 22.295115));
+		locations.add(createLocation("Kuikkulankatu 8", 60.463735, 22.294472));
+		locations.add(createLocation("Yliopistonkatu 7", 60.454488, 22.273057));
+		locations.add(createLocation("Torninkatu 6", 60.453895, 22.263015));
+		locations.add(createLocation("Kirsikkatie 6", 60.441576, 22.30829));
+		locations.add(createLocation("Peralankatu 23", 60.451419, 22.32065));
+		locations.add(createLocation("Kupittaankatu 51", 60.442571, 22.274259));
+		locations.add(createLocation("Rauhankatu 5", 60.452139, 22.255848));
+		locations.add(createLocation("Murtomaantie 39", 60.462634, 22.275761));
+		locations.add(createLocation("Piispanpelto 3", 60.462084, 22.284945));
+		locations.add(createLocation("Harjukatu 3-5", 60.455081, 22.305329));
 
-        for (int i = 0; i < RANDOM_TICKETS_COUNT; i++) {
-            result.add(createRandomTicket(null));
-        }
+		Collection<Ticket> result = Lists.newArrayList();
+		for (Location location : locations) {
+			result.add(createRandomTicket(location));
+		}
 
-        return result;
-    }
+		for (int i = 0; i < RANDOM_TICKETS_COUNT; i++) {
+			result.add(createRandomTicket(null));
+		}
 
-    private static Ticket createRandomTicket(final Location location) {
-        final Random random = new Random();
-        final Ticket ticket = new Ticket();
+		return result;
+	}
 
-        Calendar cal = Calendar.getInstance();
+	private static Ticket createRandomTicket(final Location location) {
+		final Random random = new Random();
+		final Ticket ticket = new Ticket();
 
-        if (location == null) {
-            cal.add(Calendar.HOUR, -(30 + random.nextInt(70)));
-            ticket.setNotes("Dummy notes");
-            ticket.setLocation(createDummyLocation());
-        } else {
-            cal.add(Calendar.HOUR, -random.nextInt(24));
-            ticket.setLocation(location);
-            ticket.setNotes("Notes for " + location.getAddress());
-        }
-        cal.set(Calendar.MINUTE, 0);
-        ticket.setTimeStamp(cal.getTime());
+		Calendar cal = Calendar.getInstance();
 
-        ticket.setImageUrl("VAADIN/themes/parking/tickets/" + 1 + ".jpg");
-        ticket.setThumbnailUrl("VAADIN/themes/parking/tickets/" + 1
-                + "thumbnail.jpg");
-        ticket.setImageIncluded(true);
-        ticket.setRegisterPlateNumber("ABC-" + (random.nextInt(800) + 100));
+		if (location == null) {
+			cal.add(Calendar.HOUR, -(30 + random.nextInt(70)));
+			ticket.setNotes("Dummy notes");
+			ticket.setLocation(createDummyLocation());
+		} else {
+			cal.add(Calendar.HOUR, -random.nextInt(24));
+			ticket.setLocation(location);
+			ticket.setNotes("Notes for " + location.getAddress());
+		}
+		cal.set(Calendar.MINUTE, 0);
+		ticket.setTimeStamp(cal.getTime());
 
-        ticket.setViolation(Violation.values()[random.nextInt(Violation
-                .values().length)]);
+		ticket.setImageUrl("VAADIN/themes/parking/tickets/" + 1 + ".jpg");
+		ticket.setThumbnailUrl("VAADIN/themes/parking/tickets/" + 1
+				+ "thumbnail.jpg");
+		ticket.setImageIncluded(true);
+		ticket.setRegisterPlateNumber("ABC-" + (random.nextInt(800) + 100));
 
-        ticket.setMyTicket(random.nextDouble() < 0.1);
+		ticket.setViolation(Violation.values()[random.nextInt(Violation
+				.values().length)]);
 
-        ticket.setArea("ABC".charAt(random.nextInt(3))
-                + String.valueOf(random.nextInt(4) + 1));
-        return ticket;
-    }
+		ticket.setMyTicket(random.nextDouble() < 0.1);
 
-    private static Location createDummyLocation() {
-        final Random random = new Random();
+		ticket.setArea("ABC".charAt(random.nextInt(3))
+				+ String.valueOf(random.nextInt(4) + 1));
+		return ticket;
+	}
 
-        double lat = ParkingUI.getApp().getCurrentLatitude();
-        double lon = ParkingUI.getApp().getCurrentLongitude();
+	private static Location createDummyLocation() {
+		final Random random = new Random();
 
-        Location location = new Location();
-        location.setAddress("Test");
+		double lat = ParkingUI.getApp().getCurrentLatitude();
+		double lon = ParkingUI.getApp().getCurrentLongitude();
 
-        double latitude = lat + (random.nextDouble() - 0.5) * 0.1;
-        double longitude = lon + (random.nextDouble() - 0.5) * 0.1;
-        location.setLatitude(latitude);
-        location.setLongitude(longitude);
+		Location location = new Location();
+		location.setAddress("Test");
 
-        return location;
-    }
+		double latitude = lat + (random.nextDouble() - 0.5) * 0.1;
+		double longitude = lon + (random.nextDouble() - 0.5) * 0.1;
+		location.setLatitude(latitude);
+		location.setLongitude(longitude);
 
-    private static Location createLocation(final String address,
-            final double latitude, final double longitude) {
-        Location location = new Location();
-        location.setAddress(address);
-        location.setLatitude(latitude);
-        location.setLongitude(longitude);
-        return location;
-    }
+		return location;
+	}
 
-    public static void persistTickets(final List<Ticket> tickets) {
-        for (Ticket ticket : tickets) {
-            if (ticket != null) {
-                DataUtil.persistTicket(ticket);
-            }
-        }
-        StringBuilder sb = new StringBuilder(tickets.size() + " ");
-        sb.append("ticket");
-        if (tickets.size() > 1) {
-            sb.append("s");
-        }
-        sb.append(" saved");
+	private static Location createLocation(final String address,
+			final double latitude, final double longitude) {
+		Location location = new Location();
+		location.setAddress(address);
+		location.setLatitude(latitude);
+		location.setLongitude(longitude);
+		return location;
+	}
 
-        JavaScript.eval("window.alert('" + sb + "')");
-    }
+	public static void persistTickets(final List<Ticket> tickets) {
+		for (Ticket ticket : tickets) {
+			if (ticket != null) {
+				DataUtil.persistTicket(ticket);
+			}
+		}
+		StringBuilder sb = new StringBuilder(tickets.size() + " ");
+		sb.append("ticket");
+		if (tickets.size() > 1) {
+			sb.append("s");
+		}
+		sb.append(" saved");
 
-    public static void persistTicket(final Ticket ticket) {
-        ticket.setMyTicket(true);
-        Location location = ticket.getLocation();
-        if (location.getLatitude() == 0.0 || location.getLongitude() == 0.0) {
-            determineTicketLocation(ticket);
-        }
-        ParkingUI.getTicketContainer().addItem(ticket);
-    }
+		JavaScript.eval("window.alert('" + sb + "')");
+	}
 
-    private static void determineTicketLocation(final Ticket ticket) {
-        double latitude = ParkingUI.getApp().getCurrentLatitude();
-        double longitude = ParkingUI.getApp().getCurrentLongitude();
+	public static void persistTicket(final Ticket ticket) {
+		ticket.setMyTicket(true);
+		Location location = ticket.getLocation();
+		if (location.getLatitude() == 0.0 || location.getLongitude() == 0.0) {
+			determineTicketLocation(ticket);
+		}
+		ParkingUI.getTicketContainer().addItem(ticket);
+	}
 
-        try {
-            // Try to determine the coordinates using google maps api
-            String address = ticket.getLocation().getAddress();
-            if (address != null) {
-                StringBuilder str = new StringBuilder(
-                        "http://maps.google.com/maps/api/geocode/json?address=");
-                str.append(address.replaceAll(" ", "+"));
-                str.append("&sensor=false");
+	private static void determineTicketLocation(final Ticket ticket) {
+		double latitude = ParkingUI.getApp().getCurrentLatitude();
+		double longitude = ParkingUI.getApp().getCurrentLongitude();
 
-                URL url = new URL(str.toString());
-                URLConnection urlc = url.openConnection();
-                BufferedReader bfr = new BufferedReader(new InputStreamReader(
-                        urlc.getInputStream()));
+		try {
+			// Try to determine the coordinates using google maps api
+			String address = ticket.getLocation().getAddress();
+			if (address != null) {
+				StringBuilder str = new StringBuilder(
+						"http://maps.google.com/maps/api/geocode/json?address=");
+				str.append(address.replaceAll(" ", "+"));
+				str.append("&sensor=false");
 
-                String line;
-                final StringBuilder builder = new StringBuilder(2048);
-                builder.append("[");
-                while ((line = bfr.readLine()) != null) {
-                    builder.append(line);
-                }
-                builder.append("]");
-                final JSONArray jsa = new JSONArray(builder.toString());
-                final JSONObject jo = (JSONObject) jsa.get(0);
-                JSONArray results = jo.getJSONArray("results");
-                JSONObject geometry = results.getJSONObject(0).getJSONObject(
-                        "geometry");
-                JSONObject loc = geometry.getJSONObject("location");
-                latitude = loc.getDouble("lat");
-                longitude = loc.getDouble("lng");
-            }
-        } catch (Exception e) {
-            // Ignore
-        }
+				URL url = new URL(str.toString());
+				URLConnection urlc = url.openConnection();
+				BufferedReader bfr = new BufferedReader(new InputStreamReader(
+						urlc.getInputStream()));
 
-        ticket.getLocation().setLatitude(latitude);
-        ticket.getLocation().setLongitude(longitude);
+				String line;
+				final StringBuilder builder = new StringBuilder(2048);
+				builder.append("[");
+				while ((line = bfr.readLine()) != null) {
+					builder.append(line);
+				}
+				builder.append("]");
+				final JSONArray jsa = new JSONArray(builder.toString());
+				final JSONObject jo = (JSONObject) jsa.get(0);
+				JSONArray results = jo.getJSONArray("results");
+				JSONObject geometry = results.getJSONObject(0).getJSONObject(
+						"geometry");
+				JSONObject loc = geometry.getJSONObject("location");
+				latitude = loc.getDouble("lat");
+				longitude = loc.getDouble("lng");
+			}
+		} catch (Exception e) {
+			// Ignore
+		}
 
-    }
+		ticket.getLocation().setLatitude(latitude);
+		ticket.getLocation().setLongitude(longitude);
+
+	}
+
+	public static void confirmed(ShiftSuggestion shiftSuggestion) {
+		Shift shift = new Shift();
+		shift.setName("Push Demo");
+		shift.setArea(shiftSuggestion.getArea());
+		shift.setDurationMillis(HOUR_IN_MILLIS
+				* (Math.abs(shiftSuggestion.getEnd()
+						- shiftSuggestion.getStart())));
+		DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+		try {
+			Date date = dateFormat.parse(shiftSuggestion.getDate());
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(date);
+			calendar.set(Calendar.HOUR_OF_DAY, shiftSuggestion.getStart());
+			shift.setDate(calendar.getTime());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		shifts.add(shift);
+		for (ShiftListener shiftLisener : shiftListeners) {
+			shiftLisener.newShiftAdded(shift);
+		}
+	}
+	
+	
+	
+	
 
 }

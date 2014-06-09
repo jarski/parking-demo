@@ -1,5 +1,7 @@
 package com.vaadin.demo.parking.model;
 
+import org.json.JSONObject;
+
 
 public class ShiftSuggestion {
 	
@@ -32,5 +34,6 @@ public class ShiftSuggestion {
 	public void setEnd(Integer end) {
 		this.end = end;
 	}
+
 	
 }

@@ -32,6 +32,7 @@ import com.vaadin.client.JavaScriptExtension;
 import com.vaadin.client.extensions.javascriptmanager.JavaScriptManagerConnector;
 import com.vaadin.client.ui.button.ButtonConnector;
 import com.vaadin.client.ui.csslayout.CssLayoutConnector;
+import com.vaadin.client.ui.formlayout.FormLayoutConnector;
 import com.vaadin.client.ui.image.ImageConnector;
 import com.vaadin.client.ui.label.LabelConnector;
 import com.vaadin.client.ui.link.LinkConnector;
@@ -94,6 +95,7 @@ public class WidgetLoaderFactory extends TouchKitBundleLoaderFactory {
         usedConnectors.add(VerticalLayoutConnector.class.getName());
         usedConnectors.add(QRCodeConnector.class.getName());
         usedConnectors.add(JavaScriptExtension.class.getName());
+        usedConnectors.add(FormLayoutConnector.class.getName());
     }
 
     @Override
