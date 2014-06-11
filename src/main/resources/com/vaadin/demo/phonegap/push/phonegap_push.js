@@ -20,10 +20,11 @@
 var phoneGapPushExtension;
 
 window.com_vaadin_demo_phonegap_push_PhoneGapPushExtension = function() {
+	phoneGapPushExtension = this;
+	
 	this.initialize = function(command) {
 		if (localStorage.getItem("isWrappedInPhoneGap")) {
 			app.initialize();
-			phoneGapPushExtension = this;
 		}
 	};
 };
@@ -60,7 +61,7 @@ var app = {
 			if (device.platform == 'android' || device.platform == 'Android') {
 				pushNotification.register(app.successHandler, app.errorHandler,
 						{
-							"senderID" : "280534261435",
+							"senderID" : phoneGapPushExtension.getState().androidSenderID,
 							"ecb" : "app.onNotificationGCM"
 						}); // required!
 			} 

@@ -1,13 +1,8 @@
 package com.vaadin.demo.phonegap.push;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,30 +18,12 @@ public class AndroidPushServer {
 	
 	static private Logger logger = Logger.getLogger(AndroidPushServer.class.getName());
 	
-	// The Project Number of Google API Project (Check https://cloud.google.com/console)
-	static String senderId = null;
-	// Static block to load push properties
-	static {
-		Properties properties = new Properties();
-		try {
-			InputStream stream = AndroidPushServer.class.getResourceAsStream("push.properties");
-			if(stream == null) {
-				throw new RuntimeException("The properties file for push is missing");
-			}
-			properties.load(stream);
-		} catch (IOException e) {
-			throw new RuntimeException("Wasn't able to read the properties file for push", e);
-		}
-		senderId = properties.getProperty("android.senderId");
-	}
-	
-
 	public static void pushNewShift(ShiftSuggestion bean) {
 		if(noDestinations()) {
 			return;
 		}
 		
-		Sender sender = new Sender(senderId);
+		Sender sender = new Sender(AndroidProperties.getAPIKey());
 		Message msg = new Message.Builder()
 				.addData("message", createMessage(bean))
 				.addData("soundname", "beep.wav")

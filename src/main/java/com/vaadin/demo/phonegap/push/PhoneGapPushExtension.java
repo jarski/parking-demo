@@ -7,8 +7,6 @@ import org.json.JSONObject;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.server.AbstractJavaScriptExtension;
 import com.vaadin.ui.JavaScriptFunction;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.UI;
 
 @JavaScript({"phonegap_push.js", "jquery_1.5.2.min.js"})
@@ -38,10 +36,18 @@ public class PhoneGapPushExtension extends AbstractJavaScriptExtension {
 				notificationListener.notificationReceived(notification);
 			}
 		});
+		if(AndroidProperties.getSenderId() == null) {
+			throw new RuntimeException("The android sender id is not spesified");
+		}
+		getState().androidSenderID = AndroidProperties.getSenderId();
 	}
 	
 	public void initialize() {
 		callFunction("initialize");
 	}
 	
+	@Override
+	protected PhoneGapPushState getState() {
+		return (PhoneGapPushState) super.getState();
+	}
 }
