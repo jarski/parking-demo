@@ -12,6 +12,8 @@ import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.data.Property;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItem;
@@ -28,8 +30,11 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Table;
@@ -52,6 +57,8 @@ public class AdminUI extends UI implements ShiftListener {
 	private DateFormat timeFormat;
 	private FieldGroup binder  = new FieldGroup();
 	private ShiftTable confimedTable;
+	private HorizontalLayout controlsLayout;
+	private Table waitingTable;
 
 	@Override
 	protected void init(VaadinRequest request) {
@@ -66,14 +73,50 @@ public class AdminUI extends UI implements ShiftListener {
 
 		Layout newShiftForm = createNewShiftForm();
 
-		Table confimedTable = createConfirmedTable();
-		Table waitingTable = createWaitingTable();
+		confimedTable = createConfirmedTable();
+		waitingTable = createWaitingTable();
+		final Component waitingTableControls = createWaitingTableControls(waitingTable);
 
 		layout.addComponent(newShiftForm);
 		layout.addComponent(waitingTable);
+		layout.addComponent(waitingTableControls);
 		layout.addComponent(confimedTable);
-		
+
 		DataUtil.addShiftListener(this);
+	}
+
+	private Component createWaitingTableControls(final Table waitingTable) {
+		controlsLayout = new HorizontalLayout();
+		final Button deleteWaitingShift = new Button("Delete");
+		Button remindShift = new Button("Remind");
+		
+		deleteWaitingShift.addClickListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				DataUtil.deleteShiftSuggestion((ShiftSuggestion) waitingTable.getValue());
+				updateWaitingTable();
+				waitingTable.setValue(null);
+			}
+		});
+		remindShift.addClickListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				AndroidPushServer.pushNewShift((ShiftSuggestion) waitingTable.getValue());
+			}
+		});
+		
+		controlsLayout.setVisible(false);
+		waitingTable.addValueChangeListener(new ValueChangeListener() {
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				updateControlsVisibility();
+			}
+		});
+		
+		controlsLayout.setSpacing(true);
+		controlsLayout.addComponent(deleteWaitingShift);
+		controlsLayout.addComponent(remindShift);
+		return controlsLayout;
 	}
 
 	private Layout createNewShiftForm() {
@@ -90,8 +133,9 @@ public class AdminUI extends UI implements ShiftListener {
 					e.printStackTrace();
 				}
 				waitingContainer.addBean(getEditedShiftSuggestion());
+				DataUtil.addShiftSuggestion(getEditedShiftSuggestion());
 				AndroidPushServer.pushNewShift(getEditedShiftSuggestion());
-//				createDefaultShiftSuggestionAndBindIt();
+				createDefaultShiftSuggestionAndBindIt();
 			}
 
 		});
@@ -178,8 +222,7 @@ public class AdminUI extends UI implements ShiftListener {
 	}
 
 	private Table createWaitingTable() {
-		waitingContainer = new BeanItemContainer<ShiftSuggestion>(
-				ShiftSuggestion.class);
+		waitingContainer = buildShiftSuggestionContainer();
 		Table waitingTable = new Table("Shifts waiting for confirmation",
 				waitingContainer) {
 			protected String formatPropertyValue(Object rowId, Object colId,
@@ -197,12 +240,14 @@ public class AdminUI extends UI implements ShiftListener {
 		waitingTable.setVisibleColumns("area", "date", "start", "end");
 		waitingTable.setPageLength(5);
 		waitingTable.setWidth("350px");
+		waitingTable.setImmediate(true);
+		waitingTable.setSelectable(true);
 		return waitingTable;
 	}
 
-	private Table createConfirmedTable() {
+	private ShiftTable createConfirmedTable() {
 		BeanItemContainer<Shift> confirmedContainer = buildShiftContainer();
-		confimedTable = new ShiftTable("Confirmed shifts",
+		ShiftTable confimedTable = new ShiftTable("Confirmed shifts",
 				confirmedContainer);
 		confimedTable.setWidth("350px");
 		return confimedTable;
@@ -212,17 +257,32 @@ public class AdminUI extends UI implements ShiftListener {
 		return new BeanItemContainer<Shift>(Shift.class,
 				DataUtil.getShifts());
 	}
+	
+	private BeanItemContainer<ShiftSuggestion> buildShiftSuggestionContainer() {
+		return new BeanItemContainer<ShiftSuggestion>(ShiftSuggestion.class,
+				DataUtil.getShiftSuggestions());
+	}
 
 	@Override
 	public void newShiftAdded(Shift shift) {
 		access(new Runnable() {
-			
 			@Override
 			public void run() {
 				Notification.show("Shift accepted", Notification.Type.TRAY_NOTIFICATION);
-				waitingContainer.removeAllItems();
+				updateWaitingTable();
 				confimedTable.updateContainerDataSource(buildShiftContainer());
 			}
+
 		});
+	}
+	
+	private void updateWaitingTable() {
+		waitingContainer.removeAllItems();
+		waitingContainer.addAll(DataUtil.getShiftSuggestions());
+		updateControlsVisibility();
+	}
+	
+	private void updateControlsVisibility() {
+		controlsLayout.setVisible(waitingTable.getValue() != null);
 	}
 }

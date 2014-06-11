@@ -27,6 +27,7 @@ import com.vaadin.demo.phonegap.push.PhoneGapPushExtension.NotificationListener;
 import com.vaadin.server.Page;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.ui.window.WindowMode;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
@@ -175,15 +176,15 @@ public class ParkingUI extends UI implements NotificationListener {
 	@Override
 	public void notificationReceived(JSONObject notification) {
 		try {
-			ShiftSuggestion shiftSuggestion = new ShiftSuggestion();
+			ShiftSuggestion shiftSuggestion = new ShiftSuggestion(notification.getLong("id"));
 			shiftSuggestion.setArea(notification.getString("area"));
 			shiftSuggestion.setDate(notification.getString("date"));
 			shiftSuggestion.setStart(notification.getInt("start"));
 			shiftSuggestion.setEnd(notification.getInt("end"));
 			
 			notificationPopover.setShiftSuggestion(shiftSuggestion);
+			removeWindow(notificationPopover);
 			addWindow(notificationPopover);
-			
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

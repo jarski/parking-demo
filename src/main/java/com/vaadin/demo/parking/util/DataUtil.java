@@ -33,6 +33,7 @@ public class DataUtil {
 	private static final List<String> NAMES = Arrays.asList("John Doe",
 			"Jane Doe");
 	private static final Collection<Shift> shifts = generateRandomShifts();
+	private static final Collection<ShiftSuggestion> shiftSuggestions = new LinkedList<ShiftSuggestion>();
 
 	static private final Collection<ShiftListener> shiftListeners = new LinkedList<ShiftListener>();
 	public interface ShiftListener {
@@ -79,6 +80,10 @@ public class DataUtil {
 
 	public static Collection<Shift> getShifts() {
 		return shifts;
+	}
+
+	public static Collection<ShiftSuggestion> getShiftSuggestions() {
+		return shiftSuggestions;
 	}
 
 	private static final int RANDOM_TICKETS_COUNT = 50;
@@ -245,7 +250,11 @@ public class DataUtil {
 
 	}
 
-	public static void confirmed(ShiftSuggestion shiftSuggestion) {
+	public static synchronized boolean confirm(ShiftSuggestion shiftSuggestion) {
+		if(! shiftSuggestions.contains(shiftSuggestion)) {
+			return false;
+		}
+		
 		Shift shift = new Shift();
 		shift.setName("Push Demo");
 		shift.setArea(shiftSuggestion.getArea());
@@ -265,13 +274,20 @@ public class DataUtil {
 		}
 		
 		shifts.add(shift);
+		shiftSuggestions.remove(shiftSuggestion);
 		for (ShiftListener shiftLisener : shiftListeners) {
 			shiftLisener.newShiftAdded(shift);
 		}
+		return true;
 	}
-	
-	
-	
+
+	public static synchronized void addShiftSuggestion(ShiftSuggestion editedShiftSuggestion) {
+		shiftSuggestions.add(editedShiftSuggestion);
+	}
+
+	public static synchronized void deleteShiftSuggestion(ShiftSuggestion value) {
+		shiftSuggestions.remove(value);
+	}
 	
 
 }

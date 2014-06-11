@@ -5,10 +5,39 @@ import org.json.JSONObject;
 
 public class ShiftSuggestion {
 	
+	private static long idRunner = 0;
+	
+	private long id;
 	private String area = "A2";
 	private String date = "";
 	private Integer start = null;
 	private Integer end = null;
+	
+	public ShiftSuggestion() {
+		id = idRunner++;
+	}
+	
+	public ShiftSuggestion(long id) {
+		this.id = id;
+	}
+	
+	public long getId() {
+		return id;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof ShiftSuggestion) {
+			ShiftSuggestion value = (ShiftSuggestion) obj;
+			return this.id == value.id;
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode() {
+		return (int) this.id;
+	}
 	
 	public String getArea() {
 		return area;

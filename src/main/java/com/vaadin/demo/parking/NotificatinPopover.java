@@ -29,14 +29,15 @@ class NotificatinPopover extends Popover implements ClickListener {
 		setWidth("300px");
 		setHeight("200px");
 		createButtons();
+		setClosable(false);
 	}
-	
+
 	public void setShiftSuggestion(ShiftSuggestion shiftSuggestion) {
 		this.shiftSuggestion = shiftSuggestion;
 		NavigationView content = createContent();
 		setContent(content);
 	}
-	
+
 	private NavigationView createContent() {
 		VerticalLayout layout = createLayout();
 		NavigationView content = new NavigationView(layout);
@@ -75,7 +76,8 @@ class NotificatinPopover extends Popover implements ClickListener {
 		builder.append(shiftSuggestion.getDate());
 		builder.append("\n");
 		builder.append("Time ");
-		DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT, UI.getCurrent().getLocale());
+		DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT, UI
+				.getCurrent().getLocale());
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.MINUTE, 0);
 		calendar.set(Calendar.HOUR, shiftSuggestion.getStart());
@@ -87,7 +89,6 @@ class NotificatinPopover extends Popover implements ClickListener {
 		return message;
 	}
 
-
 	private void createButtons() {
 		decline = new Button("Decline", this);
 		accept = new Button("Accept", this);
@@ -97,9 +98,15 @@ class NotificatinPopover extends Popover implements ClickListener {
 
 	@Override
 	public void buttonClick(ClickEvent event) {
-		if(accept.equals(event.getButton())) {
-			DataUtil.confirmed(shiftSuggestion);
-			Notification.show("Shift confirmed", Notification.Type.TRAY_NOTIFICATION);
+		if (accept.equals(event.getButton())) {
+			boolean succeeded = DataUtil.confirm(shiftSuggestion);
+			if (succeeded) {
+				Notification.show("Shift confirmed",
+						Notification.Type.TRAY_NOTIFICATION);
+			} else {
+				Notification.show("Failed: shift was already taken :(",
+						Notification.Type.TRAY_NOTIFICATION);
+			}
 		}
 		close();
 	}

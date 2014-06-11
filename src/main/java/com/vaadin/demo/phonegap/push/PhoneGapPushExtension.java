@@ -28,7 +28,7 @@ public class PhoneGapPushExtension extends AbstractJavaScriptExtension {
 			public void call(JSONArray arguments) throws JSONException {
 				String regId = arguments.getString(0);
 				AndroidPushServer.addDevice(regId);
-				Notification.show("Registered with id: "+regId, Type.ERROR_MESSAGE);
+//				Notification.show("Registered with id: "+regId, Type.ERROR_MESSAGE);
 			}
 		});
 		addFunction("receivedNotification", new JavaScriptFunction() {

@@ -8,3 +8,4 @@ gwt-unitCache/
 rebel.xml
 .checkstyle
 .DS_Store
+*push.properties
